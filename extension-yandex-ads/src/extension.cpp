@@ -28,6 +28,37 @@ namespace dmYandexAds
         return 0;
     }
 
+    static int Lua_EnableLogging(lua_State *L)
+    {
+        DM_LUA_STACK_CHECK(L, 0);
+        EnableLogging();
+        return 0;
+    }
+
+    static int Lua_SetUserConsent(lua_State *L)
+    {
+        DM_LUA_STACK_CHECK(L, 0);
+        bool consent = lua_toboolean(L, 1);
+        SetUserConsent(consent);
+        return 0;
+    }
+
+    static int Lua_SetAgeRestricted(lua_State *L)
+    {
+        DM_LUA_STACK_CHECK(L, 0);
+        bool ageRestricted = lua_toboolean(L, 1);
+        SetAgeRestricted(ageRestricted);
+        return 0;
+    }
+
+    static int Lua_SetLocationTracking(lua_State *L)
+    {
+        DM_LUA_STACK_CHECK(L, 0);
+        bool tracking = lua_toboolean(L, 1);
+        SetLocationTracking(tracking);
+        return 0;
+    }
+
     // ------------------------------------------------------------------------------------------
 
     static int Lua_LoadInterstitial(lua_State *L) {
@@ -132,6 +163,10 @@ namespace dmYandexAds
     static const luaL_reg Module_methods[] =
         {
             {"initialize", Lua_Initialize},
+            {"enable_logging", Lua_EnableLogging},
+            {"set_user_consent", Lua_SetUserConsent},
+            {"set_age_restricted", Lua_SetAgeRestricted},
+            {"set_location_tracking", Lua_SetLocationTracking},
             {"set_callback", Lua_SetCallback},
 
             {"load_interstitial", Lua_LoadInterstitial},

@@ -20,6 +20,10 @@ namespace dmYandexAds
         jobject m_AppJNI;
 
         jmethodID m_Initialize;
+        jmethodID m_EnableLogging;
+        jmethodID m_SetUserConsent;
+        jmethodID m_SetAgeRestricted;
+        jmethodID m_SetLocationTracking;
 
         jmethodID m_LoadInterstitial;
         jmethodID m_IsInterstitialLoaded;
@@ -105,6 +109,10 @@ namespace dmYandexAds
     static void InitJNIMethods(JNIEnv *env, jclass cls)
     {
         g_app.m_Initialize = env->GetMethodID(cls, "initialize", "()V");
+        g_app.m_EnableLogging = env->GetMethodID(cls, "enableLogging", "()V");
+        g_app.m_SetUserConsent = env->GetMethodID(cls, "setUserConsent", "(Z)V");
+        g_app.m_SetAgeRestricted = env->GetMethodID(cls, "setAgeRestricted", "(Z)V");
+        g_app.m_SetLocationTracking = env->GetMethodID(cls, "setLocationTracking", "(Z)V");
 
         g_app.m_LoadInterstitial = env->GetMethodID(cls, "loadInterstitial", "(Ljava/lang/String;)V");
         g_app.m_IsInterstitialLoaded = env->GetMethodID(cls, "isInterstitialLoaded", "()Z");
@@ -144,6 +152,26 @@ namespace dmYandexAds
     void Initialize()
     {
         CallVoidMethod(g_app.m_AppJNI, g_app.m_Initialize);
+    }
+
+    void EnableLogging()
+    {
+        CallVoidMethod(g_app.m_AppJNI, g_app.m_EnableLogging);
+    }
+
+    void SetUserConsent(bool consent)
+    {
+        CallVoidMethodBool(g_app.m_AppJNI, g_app.m_SetUserConsent, consent);
+    }
+
+    void SetAgeRestricted(bool ageRestricted)
+    {
+        CallVoidMethodBool(g_app.m_AppJNI, g_app.m_SetAgeRestricted, ageRestricted);
+    }
+
+    void SetLocationTracking(bool tracking)
+    {
+        CallVoidMethodBool(g_app.m_AppJNI, g_app.m_SetLocationTracking, tracking);
     }
 
     // ------------------------------------------------------------------------------------------

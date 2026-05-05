@@ -26,6 +26,13 @@ namespace dmYandexAds
     void ActivateApp();
 
     void Initialize();
+    void EnableLogging();
+
+    // GDPR / consent (SDK 8 — class renamed YandexAds, methods preserved /
+    // renamed). Call before initialize() or at least before loading ads.
+    void SetUserConsent(bool consent);
+    void SetAgeRestricted(bool ageRestricted);
+    void SetLocationTracking(bool tracking);
 
     void LoadInterstitial(const char *unitId);
     bool IsInterstitialLoaded();

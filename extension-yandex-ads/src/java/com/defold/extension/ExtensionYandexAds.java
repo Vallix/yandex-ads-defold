@@ -20,10 +20,9 @@ import com.yandex.mobile.ads.banner.BannerAdSize;
 import com.yandex.mobile.ads.banner.BannerAdView;
 import com.yandex.mobile.ads.common.AdError;
 import com.yandex.mobile.ads.common.AdRequest;
-import com.yandex.mobile.ads.common.AdRequestConfiguration;
 import com.yandex.mobile.ads.common.AdRequestError;
 import com.yandex.mobile.ads.common.ImpressionData;
-import com.yandex.mobile.ads.common.MobileAds;
+import com.yandex.mobile.ads.common.YandexAds;
 
 import com.yandex.mobile.ads.interstitial.InterstitialAd;
 import com.yandex.mobile.ads.interstitial.InterstitialAdEventListener;
@@ -74,7 +73,7 @@ public class ExtensionYandexAds {
     }
 
     public void initialize() {
-        activity.runOnUiThread(() -> MobileAds.initialize(activity, () -> {
+        activity.runOnUiThread(() -> YandexAds.initialize(activity, () -> {
             Log.d(TAG, "onInitializationCompleted");
             initInterstitial();
             initRewarded();
@@ -86,7 +85,31 @@ public class ExtensionYandexAds {
 
       public void enableLogging() {
         Log.d(TAG, "enableLogging");
-        MobileAds.enableLogging(true);
+        YandexAds.enableLogging(true);
+    }
+
+    // GDPR / consent — consumers should call before initialize() or before
+    // loading ads. Class rename (MobileAds → YandexAds) plus a couple of
+    // method renames in SDK 8.
+    public void setUserConsent(final boolean consent) {
+        activity.runOnUiThread(() -> {
+            Log.d(TAG, "setUserConsent: " + consent);
+            YandexAds.setUserConsent(consent);
+        });
+    }
+
+    public void setAgeRestricted(final boolean ageRestricted) {
+        activity.runOnUiThread(() -> {
+            Log.d(TAG, "setAgeRestricted: " + ageRestricted);
+            YandexAds.setAgeRestricted(ageRestricted);
+        });
+    }
+
+    public void setLocationTracking(final boolean tracking) {
+        activity.runOnUiThread(() -> {
+            Log.d(TAG, "setLocationTracking: " + tracking);
+            YandexAds.setLocationTracking(tracking);
+        });
     }
 
     // ------------------------------------------------------------------------------------------
@@ -94,9 +117,14 @@ public class ExtensionYandexAds {
     private InterstitialAdEventListener mInterstitialAdEventListener;
     private InterstitialAd mInterstitialAd;
 
+    private InterstitialAdLoadListener mInterstitialAdLoadListener;
+
     private void initInterstitial(){
         mInterstitialAdLoader = new InterstitialAdLoader(activity);
-        mInterstitialAdLoader.setAdLoadListener(new InterstitialAdLoadListener() {
+
+        // SDK 8: load listener is now passed inline to loadAd() instead of
+        // being set on the loader. Keep the instance once and reuse it.
+        mInterstitialAdLoadListener = new InterstitialAdLoadListener() {
             @Override
             public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
                 Log.d(TAG, "interstitial:onAdLoaded");
@@ -109,7 +137,7 @@ public class ExtensionYandexAds {
                 Log.e(TAG, "interstitial:onAdFailedToLoad" + adRequestError);
                 sendSimpleMessage(MSG_INTERSTITIAL, EVENT_ERROR_LOAD, "error", adRequestError.toString());
             }
-        });
+        };
 
         mInterstitialAdEventListener = new InterstitialAdEventListener() {
             @Override
@@ -151,7 +179,11 @@ public class ExtensionYandexAds {
             Log.d(TAG, "loadInterstitial: "+unitId);
             if (mInterstitialAdLoader != null) {
                 destroyInterstitial();
-                mInterstitialAdLoader.loadAd(new AdRequestConfiguration.Builder(unitId).build());
+                // SDK 8: AdRequestConfiguration removed — unitId goes via
+                // AdRequest.Builder, listener passed to loadAd().
+                mInterstitialAdLoader.loadAd(
+                    new AdRequest.Builder(unitId).build(),
+                    mInterstitialAdLoadListener);
             }
         });
     }
@@ -185,9 +217,12 @@ public class ExtensionYandexAds {
     private  RewardedAdEventListener mRewardedAdEventListener;
     private RewardedAd mRewardedAd;
 
+    private RewardedAdLoadListener mRewardedAdLoadListener;
+
     private void initRewarded(){
         mRewardedAdLoader = new RewardedAdLoader(activity);
-        mRewardedAdLoader.setAdLoadListener(new RewardedAdLoadListener() {
+
+        mRewardedAdLoadListener = new RewardedAdLoadListener() {
             @Override
             public void onAdLoaded(@NonNull RewardedAd rewardedAd) {
                 Log.d(TAG, "rewarded:onAdLoaded");
@@ -200,7 +235,7 @@ public class ExtensionYandexAds {
                 Log.e(TAG, "rewarded:onAdFailedToLoad" + adRequestError);
                 sendSimpleMessage(MSG_REWARDED, EVENT_ERROR_LOAD, "error", adRequestError.toString());
             }
-        });
+        };
 
         mRewardedAdEventListener = new RewardedAdEventListener() {
             @Override
@@ -248,7 +283,9 @@ public class ExtensionYandexAds {
             Log.d(TAG, "loadRewarded: "+unitId);
             if (mRewardedAdLoader != null) {
                 destroyRewardedAd();
-                mRewardedAdLoader.loadAd(new AdRequestConfiguration.Builder(unitId).build());
+                mRewardedAdLoader.loadAd(
+                    new AdRequest.Builder(unitId).build(),
+                    mRewardedAdLoadListener);
             }
         });
     }
@@ -286,6 +323,8 @@ public class ExtensionYandexAds {
     private int m_bannerPosition = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
 
     private void initBanner(){
+       // SDK 8: BannerAdEventListener no longer has onLeftApplication /
+       // onReturnedToApplication callbacks.
        mBannerAdEventListener = new BannerAdEventListener() {
             @Override
             public void onAdLoaded() {
@@ -311,12 +350,6 @@ public class ExtensionYandexAds {
                 if (impressionData != null)
                     sendSimpleMessage(MSG_BANNER, EVENT_IMPRESSION, "data", impressionData.getRawData());
             }
-
-            @Override
-            public void onLeftApplication() {}
-
-            @Override
-            public void onReturnedToApplication() {}
         };
     }
 
@@ -327,18 +360,19 @@ public class ExtensionYandexAds {
                 _destroyBanner();
 
             final BannerAdView view = new BannerAdView(activity);
-            view.setAdUnitId(unitId);
-            BannerAdSize adSize = BannerAdSize.inlineSize(activity, 320, 50);
+            // SDK 8: setAdUnitId removed — unitId goes via AdRequest.Builder.
+            // Renamed: stickySize → sticky, inlineSize → inline.
+            BannerAdSize adSize = BannerAdSize.inline(activity, 320, 50);
             if (width > 0 && height > 0)
-                adSize = BannerAdSize.inlineSize(activity, width, height);
+                adSize = BannerAdSize.inline(activity, width, height);
             else if (width > 0)
-                adSize = BannerAdSize.stickySize(activity, width);
+                adSize = BannerAdSize.sticky(activity, width);
             view.setAdSize(adSize);
             view.setVisibility(View.INVISIBLE);
             mBannerAdView = view;
             createLayout();
 
-            AdRequest adRequest = new AdRequest.Builder().build();
+            AdRequest adRequest = new AdRequest.Builder(unitId).build();
             view.setBannerAdEventListener(mBannerAdEventListener);
             // Загрузка объявления.
             view.loadAd(adRequest);
