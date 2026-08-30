@@ -1,3 +1,15 @@
+// Ветка `mediation` — сборка для Google Play с медиацией «Простой монетизации»
+// Яндекса (РСЯ app 19778191). Ветка `main` остаётся чистым Yandex SDK и
+// используется RuStore-билдом: тащить туда Google Mobile Ads не нужно и вредно
+// (лишний вес + GMA падает без com.google.android.gms.ads.APPLICATION_ID).
+//
+// Инструкция Яндекса: ads.yandex.com/helpcenter/ru/easy/integration/android/
+// Она рекомендует один сборный артефакт com.yandex.android:mobileads-mediation,
+// который тянет все 14 сетей разом. Здесь он разложен на составляющие, чтобы
+// включать сети по одной: активен только Google (под него выдан AdMob App ID),
+// остальные закомментированы вместе со своими репозиториями.
+// Версии адаптеров — из POM com.yandex.android:mobileads-mediation:8.3.0.0.
+
 android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -6,9 +18,38 @@ android {
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
+
+    // Сети, которых нет в mavenCentral. Раскомментировать вместе с адаптером.
+    // maven { url 'https://android-sdk.is.com/' }                                              // IronSource
+    // maven { url 'https://artifact.bytedance.com/repository/pangle' }                          // Pangle
+    // maven { url 'https://sdk.tapjoy.com/' }                                                   // Digital Turbine (Tapjoy)
+    // maven { url 'https://artifactory.bidmachine.io/bidmachine' }                              // BidMachine
+    // maven { url 'https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea' } // Mintegral
+    // maven { url 'https://cboost.jfrog.io/artifactory/chartboost-ads/' }                       // Chartboost
+    // maven { url 'https://dl.appnext.com/' }                                                   // AppNext
 }
 
 dependencies {
-     implementation 'com.yandex.android:mobileads:8.3.0'
+    implementation 'com.yandex.android:mobileads:8.3.0'
+
+    // Включено: Google. AdMob App ID прописан в AndroidManifest игры.
+    implementation 'com.yandex.ads.mediation:mobileads-google:25.2.0.2'
+
+    // Остальной водопад «Простой монетизации». Чем больше сетей включено, тем
+    // выше заполняемость аукциона — но и тем тяжелее APK, поэтому расширяем по
+    // мере необходимости и замеряем размер.
+    // implementation 'com.yandex.ads.mediation:mobileads-extras:8.3.0.0'
+    // implementation 'com.yandex.ads.mediation:mobileads-applovin:13.6.3.0'
+    // implementation 'com.yandex.ads.mediation:mobileads-bigoads:5.7.0.3'
+    // implementation 'com.yandex.ads.mediation:mobileads-chartboost:9.3.1.31'
+    // implementation 'com.yandex.ads.mediation:mobileads-digitalturbine:8.4.3.3'
+    // implementation 'com.yandex.ads.mediation:mobileads-inmobi:11.0.0.3'
+    // implementation 'com.yandex.ads.mediation:mobileads-mintegral:17.0.41.3'
+    // implementation 'com.yandex.ads.mediation:mobileads-mytarget:5.45.3.4'
+    // implementation 'com.yandex.ads.mediation:mobileads-pangle:8.0.0.5.2'
+    // implementation 'com.yandex.ads.mediation:mobileads-startapp:5.3.1.0'
+    // implementation 'com.yandex.ads.mediation:mobileads-unityads:4.17.0.3'
+    // implementation 'com.yandex.ads.mediation:mobileads-vungle:7.7.0.3'
+    // implementation 'com.yandex.ads.mediation:mobileads-zmaticoo:1.8.5.14'
 }
