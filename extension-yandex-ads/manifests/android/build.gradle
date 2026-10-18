@@ -5,10 +5,17 @@
 //
 // Инструкция Яндекса: ads.yandex.com/helpcenter/ru/easy/integration/android/
 // Она рекомендует один сборный артефакт com.yandex.android:mobileads-mediation,
-// который тянет все 14 сетей разом. Здесь он разложен на составляющие, чтобы
+// который тянет все сети разом. Здесь он разложен на составляющие, чтобы
 // включать сети по одной: активен только Google (под него выдан AdMob App ID),
 // остальные закомментированы вместе со своими репозиториями.
-// Версии адаптеров — из POM com.yandex.android:mobileads-mediation:8.3.0.0.
+// Версии адаптеров — из POM com.yandex.android:mobileads-mediation:8.6.0.0.
+//
+// С SDK 8.6.0 адаптер Google — только next-gen: старый mobileads-google снят
+// Яндексом с поддержки и прибит к mobileads [8.3.0,8.4.0). Next-gen тянет
+// Google Mobile Ads SDK нового поколения (ads-mobile-sdk) из репозитория
+// Google, поэтому ниже добавлен google(). Требует minSdk 24 — он поднят в
+// platforms/googleplay/settings.ini игры. AdMob App ID по-прежнему берётся из
+// meta-data com.google.android.gms.ads.APPLICATION_ID в манифесте игры.
 
 android {
     compileOptions {
@@ -19,37 +26,38 @@ android {
 
 repositories {
     mavenCentral()
+    google()   // com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk
 
     // Сети, которых нет в mavenCentral. Раскомментировать вместе с адаптером.
-    // maven { url 'https://android-sdk.is.com/' }                                              // IronSource
     // maven { url 'https://artifact.bytedance.com/repository/pangle' }                          // Pangle
     // maven { url 'https://sdk.tapjoy.com/' }                                                   // Digital Turbine (Tapjoy)
-    // maven { url 'https://artifactory.bidmachine.io/bidmachine' }                              // BidMachine
     // maven { url 'https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea' } // Mintegral
     // maven { url 'https://cboost.jfrog.io/artifactory/chartboost-ads/' }                       // Chartboost
     // maven { url 'https://dl.appnext.com/' }                                                   // AppNext
 }
 
 dependencies {
-    implementation 'com.yandex.android:mobileads:8.3.0'
+    implementation 'com.yandex.android:mobileads:8.6.0'
 
     // Включено: Google. AdMob App ID прописан в AndroidManifest игры.
-    implementation 'com.yandex.ads.mediation:mobileads-google:25.2.0.2'
+    implementation 'com.yandex.ads.mediation:mobileads-google-nextgen:1.3.1.0'
 
     // Остальной водопад «Простой монетизации». Чем больше сетей включено, тем
     // выше заполняемость аукциона — но и тем тяжелее APK, поэтому расширяем по
     // мере необходимости и замеряем размер.
-    // implementation 'com.yandex.ads.mediation:mobileads-extras:8.3.0.0'
-    // implementation 'com.yandex.ads.mediation:mobileads-applovin:13.6.3.0'
-    // implementation 'com.yandex.ads.mediation:mobileads-bigoads:5.7.0.3'
-    // implementation 'com.yandex.ads.mediation:mobileads-chartboost:9.3.1.31'
-    // implementation 'com.yandex.ads.mediation:mobileads-digitalturbine:8.4.3.3'
-    // implementation 'com.yandex.ads.mediation:mobileads-inmobi:11.0.0.3'
-    // implementation 'com.yandex.ads.mediation:mobileads-mintegral:17.0.41.3'
-    // implementation 'com.yandex.ads.mediation:mobileads-mytarget:5.45.3.4'
-    // implementation 'com.yandex.ads.mediation:mobileads-pangle:8.0.0.5.2'
-    // implementation 'com.yandex.ads.mediation:mobileads-startapp:5.3.1.0'
-    // implementation 'com.yandex.ads.mediation:mobileads-unityads:4.17.0.3'
-    // implementation 'com.yandex.ads.mediation:mobileads-vungle:7.7.0.3'
-    // implementation 'com.yandex.ads.mediation:mobileads-zmaticoo:1.8.5.14'
+    // implementation 'com.yandex.ads.mediation:mobileads-extras:8.6.0.0'
+    // implementation 'com.yandex.ads.mediation:mobileads-applovin:13.6.3.3'
+    // implementation 'com.yandex.ads.mediation:mobileads-appnext:2.7.6.473.26'
+    // implementation 'com.yandex.ads.mediation:mobileads-bigoads:6.1.0.0'
+    // implementation 'com.yandex.ads.mediation:mobileads-chartboost:9.14.0.1'
+    // implementation 'com.yandex.ads.mediation:mobileads-digitalturbine:8.4.7.1'
+    // implementation 'com.yandex.ads.mediation:mobileads-inmobi:11.4.1.1'
+    // implementation 'com.yandex.ads.mediation:mobileads-mintegral:17.1.81.1'
+    // implementation 'com.yandex.ads.mediation:mobileads-moloco:4.12.0.0'
+    // implementation 'com.yandex.ads.mediation:mobileads-mytarget:5.51.2.2'
+    // implementation 'com.yandex.ads.mediation:mobileads-pangle:8.3.0.3.0'
+    // implementation 'com.yandex.ads.mediation:mobileads-startapp:5.3.1.3'
+    // implementation 'com.yandex.ads.mediation:mobileads-unityads:4.20.0.1'
+    // implementation 'com.yandex.ads.mediation:mobileads-vungle:7.7.8.1'
+    // implementation 'com.yandex.ads.mediation:mobileads-zmaticoo:1.8.5.17'
 }
