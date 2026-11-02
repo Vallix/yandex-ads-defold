@@ -26,6 +26,7 @@ repositories {
     google()   // com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk
 
     // Сети, которых нет в mavenCentral.
+    maven { url 'https://android-sdk.is.com/' }                                              // IronSource
     maven { url 'https://artifact.bytedance.com/repository/pangle' }                          // Pangle
     maven { url 'https://sdk.tapjoy.com/' }                                                   // Digital Turbine (Tapjoy)
     maven { url 'https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea' } // Mintegral
