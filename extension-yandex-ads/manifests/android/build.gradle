@@ -37,4 +37,8 @@ repositories {
 
 dependencies {
     implementation 'com.yandex.android:mobileads-mediation:8.6.0.0'
+    // Tapjoy есть в списке поддерживаемых адаптеров «Простой монетизации», но в
+    // сборный mobileads-mediation 8.6.0.0 не входит — подключаем отдельно.
+    // SDK тянется из https://sdk.tapjoy.com/ (репозиторий выше).
+    implementation 'com.yandex.ads.mediation:mobileads-tapjoy:14.8.0.1'
 }
